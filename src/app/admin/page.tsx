@@ -1,20 +1,23 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import dynamic from "next/dynamic" 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { 
-  Users, 
-  TrainFront, 
-  ThumbsUp, 
-  MapPin, 
-  Trash2,
-  RefreshCcw,
-  Home
-} from "lucide-react"
+import { Users, TrendingUp, RefreshCcw, ArrowRight, Bus, Map as MapIcon, Calendar, TrendingDown } from "lucide-react"
 import Link from "next/link"
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
+import AiInsight from "@/components/admin/AiInsight"
 
-// Definisikan tipe data agar tidak merah (Type Error)
+// Dynamic Import Map agar tidak error server-side
+const RespondentMap = dynamic(() => import("@/components/admin/RespondentMap"), { 
+  ssr: false, 
+  loading: () => <div className="h-[400px] w-full bg-slate-100 animate-pulse rounded-xl flex items-center justify-center text-slate-400">Loading Map...</div> 
+})
+
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+// Tipe Data
 type Responden = {
   id: string
   createdAt: string
@@ -29,197 +32,196 @@ type Responden = {
 export default function AdminDashboard() {
   const [data, setData] = useState<Responden[]>([])
   const [loading, setLoading] = useState(true)
+  const [isClient, setIsClient] = useState(false) 
 
-  // FUNGSI LOAD DATA DARI SERVER API
   const loadData = async () => {
     setLoading(true)
     try {
-      // Panggil API yang sudah kita buat
       const res = await fetch('/api/survei', { cache: 'no-store' })
       const json = await res.json()
-      
-      if (json.success) {
-        setData(json.data) // Simpan data ke state
-      } else {
-        console.error("API Error:", json.error)
-      }
-    } catch (error) {
-      console.error("Gagal ambil data:", error)
-      alert("Gagal memuat data dari server")
-    } finally {
-      setLoading(false)
-    }
+      if (json.success) setData(json.data)
+    } catch (error) { console.error(error) } 
+    finally { setLoading(false) }
   }
 
-  // Load saat halaman pertama kali dibuka
-  useEffect(() => {
-    loadData()
+  useEffect(() => { loadData(); setIsClient(true) }, [])
+
+  // --- LOGIKA STATISTIK ---
+  const total = data.length
+  
+  // Hitung Pemudik (yang tujuannya bukan "Tidak Mudik" atau kosong)
+  const pemudik = data.filter(d => d.tujuanProvinsi && d.tujuanProvinsi !== "Tidak Mudik").length
+  const persenPemudik = total > 0 ? ((pemudik / total) * 100).toFixed(1) : "0"
+  
+  // Data Chart Moda
+  const modaData = data.reduce((acc: any[], curr) => {
+    const name = curr.modaTransportasi || "Tidak Mudik"
+    const existing = acc.find((x: any) => x.name === name)
+    if (existing) existing.value += 1
+    else acc.push({ name, value: 1 })
+    return acc
   }, [])
 
-  // Fungsi Reset (Opsional - Hanya Alert untuk keamanan)
-  const handleReset = () => {
-     alert("Fitur hapus database dinonaktifkan untuk keamanan demo ini.")
-  }
+  // Tambah properti 'percent' untuk chart
+  const modaChart = modaData.map((m: any) => ({ 
+    ...m, 
+    percent: ((m.value / total) * 100).toFixed(1) 
+  }))
 
-  // Hitung Statistik Sederhana
-  const totalResponden = data.length
-  
-  // Cari Moda Terbanyak
-  const modaCounts = data.reduce((acc: any, curr) => {
-    const moda = curr.modaTransportasi || "Tidak Mudik"
-    acc[moda] = (acc[moda] || 0) + 1
-    return acc
-  }, {})
-  const modaPalingBanyak = Object.keys(modaCounts).sort((a, b) => modaCounts[b] - modaCounts[a])[0] || "-"
-
-  // Cari Tujuan Terbanyak
-  const tujuanCounts = data.reduce((acc: any, curr) => {
-    const tujuan = curr.tujuanProvinsi || "-"
-    acc[tujuan] = (acc[tujuan] || 0) + 1
-    return acc
-  }, {})
-  const tujuanFavorit = Object.keys(tujuanCounts).sort((a, b) => tujuanCounts[b] - tujuanCounts[a])[0] || "-"
+  // Cari Tujuan Favorit
+  const tujuanFavorit = data.length > 0 
+    ? (data
+        .filter(d => d.tujuanProvinsi && d.tujuanProvinsi !== "Tidak Mudik")
+        .sort((a,b) => 
+          data.filter(v => v.tujuanProvinsi === a.tujuanProvinsi).length - 
+          data.filter(v => v.tujuanProvinsi === b.tujuanProvinsi).length
+        ).pop()?.tujuanProvinsi || "-") 
+    : "-"
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-20">
+    <div className="space-y-6">
       
-      {/* NAVBAR */}
-      <nav className="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-                <Users className="w-5 h-5 text-white" />
-            </div>
-            <div>
-                <h1 className="font-bold text-lg leading-none">Admin Monitor</h1>
-                <p className="text-xs text-slate-400">Real-time Database (SQLite)</p>
-            </div>
-          </div>
-          <div className="flex gap-3">
-             <Button onClick={loadData} variant="secondary" size="sm" className="gap-2">
-                <RefreshCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
-             </Button>
-             <Link href="/">
-                <Button variant="outline" size="sm" className="gap-2 bg-transparent text-white border-slate-600 hover:bg-slate-800">
-                    <Home className="w-4 h-4" /> Buka Survei
-                </Button>
-             </Link>
-          </div>
+      {/* HEADER DASHBOARD */}
+      <div className="flex justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div>
+            <h2 className="text-2xl font-bold text-slate-800">Executive Dashboard</h2>
+            <p className="text-slate-500 text-sm">Real-time monitoring Angkutan Lebaran 2026.</p>
         </div>
-      </nav>
-
-      {/* CONTENT */}
-      <main className="max-w-7xl mx-auto p-6 space-y-8">
-        
-        {/* 1. STATISTIK CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-l-4 border-blue-600 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-slate-500">Total Responden</CardTitle>
-                    <Users className="h-4 w-4 text-blue-600" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold text-slate-900">{totalResponden}</div>
-                    <p className="text-xs text-slate-500">Orang mengisi survei</p>
-                </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-green-600 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-slate-500">Moda Terpopuler</CardTitle>
-                    <TrainFront className="h-4 w-4 text-green-600" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-xl font-bold text-slate-900 line-clamp-1">{modaPalingBanyak}</div>
-                    <p className="text-xs text-slate-500">Pilihan terbanyak</p>
-                </CardContent>
-            </Card>
-
-            <Card className="border-l-4 border-red-500 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-slate-500">Tujuan Favorit</CardTitle>
-                    <MapPin className="h-4 w-4 text-red-500" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-xl font-bold text-slate-900 line-clamp-1">{tujuanFavorit}</div>
-                    <p className="text-xs text-slate-500">Dominasi Pemudik</p>
-                </CardContent>
-            </Card>
+        <div className="flex gap-2">
+            <Button onClick={loadData} variant="outline" size="sm" className="gap-2">
+                <RefreshCcw className={`w-4 h-4 ${loading && 'animate-spin'}`} /> Refresh
+            </Button>
+            <Link href="/admin/respondents">
+                <Button size="sm" className="bg-slate-800 hover:bg-slate-900">Kelola Data</Button>
+            </Link>
         </div>
+      </div>
 
-        {/* 2. TABEL DATA REAL */}
-        <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between border-b bg-slate-50/50">
-                <div>
-                    <CardTitle>Data Masuk ({totalResponden})</CardTitle>
-                    <p className="text-sm text-slate-500">Data diambil langsung dari Database.</p>
-                </div>
-                <Button onClick={handleReset} variant="destructive" size="sm" className="gap-2">
-                    <Trash2 className="w-4 h-4" /> Reset
-                </Button>
-            </CardHeader>
-            <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm text-left">
-                        <thead className="text-xs text-slate-700 uppercase bg-slate-100">
-                            <tr>
-                                <th className="px-6 py-3">ID</th>
-                                <th className="px-6 py-3">Profil</th>
-                                <th className="px-6 py-3">Rute</th>
-                                <th className="px-6 py-3">Moda</th>
-                                <th className="px-6 py-3">Feedback 2025</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
-                                        Sedang memuat data...
-                                    </td>
-                                </tr>
-                            ) : data.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="px-6 py-10 text-center text-slate-400 italic">
-                                        Belum ada data masuk. Silakan isi survei di halaman utama.
-                                    </td>
-                                </tr>
-                            ) : (
-                                data.map((row) => (
-                                    <tr key={row.id} className="bg-white border-b hover:bg-slate-50">
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-blue-700 text-xs">#{row.id.slice(-5)}</div>
-                                            <div className="text-xs text-slate-400">{new Date(row.createdAt).toLocaleDateString()}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="font-medium">{row.pekerjaan}</div>
-                                            <div className="text-xs text-slate-500">{row.usia}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="text-xs bg-slate-100 px-2 py-0.5 rounded w-fit">Asal: {row.domisiliProv}</span>
-                                                <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded w-fit">Tujuan: {row.tujuanProvinsi || "-"}</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {row.modaTransportasi ? (
-                                                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">
-                                                    {row.modaTransportasi}
-                                                </span>
-                                            ) : <span className="text-slate-400">-</span>}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {row.persepsi2025 || "-"}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </CardContent>
-        </Card>
+      {/* ROW 1: KARTU STATISTIK LENGKAP */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          
+          {/* TOTAL RESPONDEN */}
+          <Card className="bg-gradient-to-br from-blue-600 to-blue-700 text-white border-none shadow-md">
+              <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <p className="text-blue-100 text-sm font-medium">Total Responden</p>
+                          <h3 className="text-3xl font-bold mt-1">{total}</h3>
+                      </div>
+                      <div className="bg-white/20 p-2 rounded-lg"><Users className="w-5 h-5 text-white" /></div>
+                  </div>
+                  <div className="mt-4 flex items-center text-xs text-blue-100">
+                      <TrendingUp className="w-3 h-3 mr-1" /> Data Masuk Real-time
+                  </div>
+              </CardContent>
+          </Card>
 
-      </main>
+          {/* POTENSI PEMUDIK */}
+          <Card className="bg-white border-l-4 border-l-orange-500 shadow-sm">
+              <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <p className="text-slate-500 text-sm font-medium">Potensi Pemudik</p>
+                          <h3 className="text-3xl font-bold mt-1 text-slate-800">{persenPemudik}%</h3>
+                      </div>
+                      <div className="bg-orange-100 p-2 rounded-lg"><Bus className="w-5 h-5 text-orange-600" /></div>
+                  </div>
+                  <p className="mt-4 text-xs text-slate-500">
+                      {pemudik} orang berencana mudik tahun ini.
+                  </p>
+              </CardContent>
+          </Card>
+
+           {/* PUNCAK ARUS (PREDIKSI STATIS) */}
+           <Card className="bg-white border-l-4 border-l-green-500 shadow-sm">
+              <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <p className="text-slate-500 text-sm font-medium">Puncak Arus (Est)</p>
+                          <h3 className="text-xl font-bold mt-1 text-slate-800">H-3 Lebaran</h3>
+                      </div>
+                      <div className="bg-green-100 p-2 rounded-lg"><Calendar className="w-5 h-5 text-green-600" /></div>
+                  </div>
+                  <p className="mt-4 text-xs text-slate-500">Sabtu, 14 Maret 2026</p>
+              </CardContent>
+          </Card>
+
+           {/* TUJUAN TERFAVORIT */}
+           <Card className="bg-white border-l-4 border-l-purple-500 shadow-sm">
+              <CardContent className="p-6">
+                  <div className="flex justify-between items-start">
+                      <div>
+                          <p className="text-slate-500 text-sm font-medium">Tujuan Terfavorit</p>
+                          <h3 className="text-xl font-bold mt-1 text-slate-800 truncate max-w-[120px]">
+                            {tujuanFavorit}
+                          </h3>
+                      </div>
+                      <div className="bg-purple-100 p-2 rounded-lg"><MapIcon className="w-5 h-5 text-purple-600" /></div>
+                  </div>
+                  <p className="mt-4 text-xs text-slate-500">Dominasi daerah tujuan.</p>
+              </CardContent>
+          </Card>
+      </div>
+
+      {/* ROW 2: CHART & AI INSIGHT */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+          
+          {/* CHART DONUT (DENGAN LABEL PERSEN) */}
+          <Card className="md:col-span-5 shadow-sm border border-slate-200">
+              <CardHeader>
+                  <CardTitle className="text-base text-slate-800">Proporsi Moda Transportasi</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[320px]">
+                  {isClient && (
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie 
+                                data={modaChart} 
+                                cx="50%" cy="50%" 
+                                innerRadius={60} 
+                                outerRadius={80} 
+                                paddingAngle={2} 
+                                dataKey="value"
+                                label={({ percent }) => percent ? `${(percent * 100).toFixed(0)}%` : ""}
+                            >
+                                {modaChart.map((entry: any, index: number) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <RechartsTooltip formatter={(value:any, name:any, props:any) => [`${value} Orang (${props.payload.percent}%)`, name]} />
+                            <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                        </PieChart>
+                    </ResponsiveContainer>
+                  )}
+              </CardContent>
+          </Card>
+
+          {/* AI INSIGHT (LEBIH BESAR) */}
+          <div className="md:col-span-7 h-full">
+              <AiInsight data={data} />
+          </div>
+      </div>
+
+      {/* ROW 3: GIS MAP (FULL WIDTH) */}
+      <div className="space-y-2">
+           <div className="flex justify-between items-center px-1">
+                <h3 className="font-bold text-slate-700 flex items-center gap-2">
+                    <MapIcon className="w-4 h-4 text-blue-600" /> Peta Pola Pergerakan (O-D Survey)
+                </h3>
+                <span className="text-[10px] text-slate-400 bg-white px-2 py-1 rounded border">Flow Map Visualization</span>
+            </div>
+          <RespondentMap data={data} />
+      </div>
+
+      {/* TOMBOL LINK KE HALAMAN PENGELOLAAN DATA */}
+      <div className="flex justify-center pt-6 pb-10">
+        <Link href="/admin/respondents">
+            <Button variant="outline" className="gap-2 text-slate-600 hover:text-blue-700 hover:border-blue-300 transition-all">
+                Lihat Detail & Kelola Data Responden <ArrowRight className="w-4 h-4" />
+            </Button>
+        </Link>
+      </div>
+
     </div>
   )
 }
