@@ -1,0 +1,77 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Responden {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  // --- IDENTITAS & KONTAK (Enkripsi) ---
+  nomorWA_encrypted String?
+  pilihanReward     String?
+  sumberInfo        String?
+
+  // --- BAGIAN 1: Karakteristik ---
+  usia            String
+  jenisKelamin    String?
+  pendidikan      String?
+  pekerjaan       String?
+  penghasilan     String?
+  domisiliProv    String?
+  domisiliKota    String?
+
+  // --- FILTER MUDIK ---
+  rencanaMudik    String // "Ya" atau "Tidak"
+
+  // --- BAGIAN 2: Tidak Mudik ---
+  alasanTidakMudik String?
+
+  // --- BAGIAN 3: Berangkat Mudik ---
+  jumlahRombongan Int?
+  alasanMudik     String?
+  tujuanProv      String?
+  tujuanKota      String?
+  tanggalBerangkat String?
+  jamBerangkat     String?
+  durasiDiTujuan   String?
+  estimasiBiaya    String?
+  modaUtama        String?
+  alasanModa       String?
+
+  // --- BAGIAN 4: Kendaraan Pribadi ---
+  jalurUtama       String?
+  masukTol         Boolean?
+  pengaruhDiskonTol String?
+  pengaruhContraflow String?
+  rencanaRestArea   String?
+  durasiIstirahat   String?
+  biayaBBMdanTol    String?
+
+  // --- BAGIAN 5: Angkutan Umum ---
+  transportKeTerminal   String?
+  transportDariTerminal String?
+  waktuBeliTiket        String?
+  modaAlternatif        String?
+
+  // --- BAGIAN 6: Arus Balik ---
+  tanggalPulang     String?
+  jamPulang         String?
+  modaPulangSama    String?
+  modaPulangBaru    String?
+  penumpangTambahan String?
+
+  // --- BAGIAN 7 & 8: Kebijakan & Evaluasi ---
+  faktorPembatal    String?
+  persepsiWFA       String?
+  pilihanTanggalWFA String?
+  evaluasi2025      String?
+  saranPemerintah   String?
+}
