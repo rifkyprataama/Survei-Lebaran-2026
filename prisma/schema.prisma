@@ -5,73 +5,82 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model Responden {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now())
 
-  // --- IDENTITAS & KONTAK (Enkripsi) ---
-  nomorWA_encrypted String?
-  pilihanReward     String?
-  sumberInfo        String?
+  // BAGIAN 1: DATA DIRI
+  usia           String
+  jenisKelamin   String
+  pendidikan     String
+  pekerjaan      String
+  penghasilan    String
+  domisiliProv   String
+  domisiliKota   String
+  rencanaMudik   String
 
-  // --- BAGIAN 1: Karakteristik ---
-  usia            String
-  jenisKelamin    String?
-  pendidikan      String?
-  pekerjaan       String?
-  penghasilan     String?
-  domisiliProv    String?
-  domisiliKota    String?
-
-  // --- FILTER MUDIK ---
-  rencanaMudik    String // "Ya" atau "Tidak"
-
-  // --- BAGIAN 2: Tidak Mudik ---
+  // BAGIAN 2-8 (FIELD OPSIONAL)
   alasanTidakMudik String?
 
-  // --- BAGIAN 3: Berangkat Mudik ---
-  jumlahRombongan Int?
-  alasanMudik     String?
-  tujuanProv      String?
-  tujuanKota      String?
-  tanggalBerangkat String?
-  jamBerangkat     String?
-  durasiDiTujuan   String?
-  estimasiBiaya    String?
-  modaUtama        String?
-  alasanModa       String?
+  // BAGIAN 3: DETAIL PERJALANAN
+  jumlahOrang      String?
+  alasanPerjalanan String?
+  tujuanProvinsi   String?
+  tujuanKota       String?
+  tanggalPergi     String?
+  jamPergi         String?
+  lamaDiTujuan     String?
+  totalDana        String?
+  pertimbanganModa String?
+  modaTransportasi String?
 
-  // --- BAGIAN 4: Kendaraan Pribadi ---
-  jalurUtama       String?
-  masukTol         Boolean?
-  pengaruhDiskonTol String?
-  pengaruhContraflow String?
-  rencanaRestArea   String?
-  durasiIstirahat   String?
-  biayaBBMdanTol    String?
+  // BAGIAN 4: KENDARAAN PRIBADI
+  jalurMotor         String?
+  jalurMobil         String?
+  namaTol            String?
+  diskonTol          String?
+  rekayasaLalin      String?
+  rencanaIstirahat   String?
+  lokasiRestArea     String?
+  mediaTol           String?
+  kebiasaanIstirahat String?
+  durasiIstirahat    String?
+  biayaBBM           String?
 
-  // --- BAGIAN 5: Angkutan Umum ---
+  // BAGIAN 5: ANGKUTAN UMUM
   transportKeTerminal   String?
   transportDariTerminal String?
   waktuBeliTiket        String?
   modaAlternatif        String?
 
-  // --- BAGIAN 6: Arus Balik ---
-  tanggalPulang     String?
-  jamPulang         String?
-  modaPulangSama    String?
-  modaPulangBaru    String?
-  penumpangTambahan String?
+  // BAGIAN 6: ARUS BALIK
+  tanggalPulang String?
+  jamPulang     String?
+  modaSama      String?
+  modaPulang    String?
+  tambahOrang   String?
 
-  // --- BAGIAN 7 & 8: Kebijakan & Evaluasi ---
-  faktorPembatal    String?
-  persepsiWFA       String?
-  pilihanTanggalWFA String?
-  evaluasi2025      String?
-  saranPemerintah   String?
+  // BAGIAN 7: WFA & KEBIJAKAN
+  faktorBatal          String?
+  persepsiWFA          String?
+  pilihanKebijakan     String?
+  pilihanTanggalWFA    String?
+  ubahHariBerangkat    String?
+  tanggalBerangkatBaru String?
+  pilihanWFApasca      String?
+  ubahHariPulang       String?
+  tanggalPulangBaru    String?
+
+  // BAGIAN 8: EVALUASI & KONTAK
+  libur2025         String?
+  persepsi2025      String?
+  saran             String?
+  pilihanReward     String?
+  sumberInfo        String?
+  bersediaResponden String?
+  nomorWA           String?
 }

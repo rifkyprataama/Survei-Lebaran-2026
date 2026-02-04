@@ -1,5 +1,4 @@
-import { Progress } from "@/components/ui/progress";
-import SurveyWizard from "@/components/survey/SurveyWizard"; // Kita panggil komponen otak survei
+import SurveyWizard from "@/components/survey/SurveyWizard"; 
 
 export default function Home() {
   return (
@@ -8,18 +7,15 @@ export default function Home() {
       {/* Container Utama */}
       <div className="w-full max-w-md space-y-6">
         
-        {/* Header Progress: Kita taruh di luar Wizard agar tetap konsisten */}
-        <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur-sm pt-4 pb-2">
-          <div className="flex justify-between text-xs text-slate-500 mb-2 font-medium">
-            <span>Survei Angkutan Lebaran</span>
-            <span>Persiapan 2026</span>
-          </div>
-          {/* Progress bar statis dulu, nanti kita bikin dinamis */}
-          <Progress value={5} className="h-2" />
-        </div>
+        {/* CATATAN PENTING:
+          Progress Bar & Header "Persiapan 2026" telah dipindahkan ke dalam 
+          komponen <SurveyWizard />.
+          
+          Hal ini dilakukan agar bar bisa bergerak otomatis (dinamis) 
+          mengikuti state 'step' yang ada di dalam Wizard tersebut.
+        */}
 
-        {/* INI KUNCINYA: Kita panggil komponen Wizard disini */}
-        {/* Komponen ini yang akan menampilkan Halaman Persetujuan (Bagian 0) */}
+        {/* Panggil Komponen Otak Survei */}
         <SurveyWizard />
 
         {/* Footer Copyright */}

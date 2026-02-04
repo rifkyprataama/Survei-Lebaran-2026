@@ -221,31 +221,54 @@ export default function SurveyWizard() {
     window.scrollTo(0,0); setStep(8);
   }
 
-  // --- FINAL SUBMIT (UBAH KE HALAMAN SUKSES) ---
+  // --- FINAL SUBMIT (KIRIM KE SERVER DATABASE) ---
   const handleFinalSubmit = async () => {
+    // 1. Validasi Input Terakhir (Bagian 8)
     const commonFields = ["libur2025", "saran", "pilihanReward", "sumberInfo", "bersediaResponden", "nomorWA"] as (keyof FormValues)[]
     let isValid = true
     const validationResults = await form.trigger(commonFields)
     if (!validationResults) isValid = false
 
+    // Validasi Kondisional Bagian 8
     if (form.getValues("libur2025") === "Ya" && !form.getValues("persepsi2025")) {
         form.setError("persepsi2025", { type: "manual", message: "Wajib diisi" })
         isValid = false
     }
 
     if (!isValid) {
+        // Scroll ke error pertama jika ada
         const firstError = document.querySelector('.text-red-500')
         if(firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' })
         return
     }
 
-    // LOG DATA KE CONSOLE (Simulasi Kirim ke Backend)
+    // 2. Ambil Semua Data Formulir
     const finalData = form.getValues()
-    console.log("DATA SURVEI FINAL:", finalData)
     
-    // PINDAH KE HALAMAN SUKSES (Step 9)
-    window.scrollTo(0,0)
-    setStep(9) 
+    try {
+        // 3. Kirim Data ke API Server (POST)
+        const response = await fetch('/api/survei', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(finalData),
+        })
+
+        if (!response.ok) {
+            throw new Error("Gagal menyimpan data ke server")
+        }
+
+        console.log("SUKSES SIMPAN KE DATABASE")
+        
+        // 4. Pindah ke Halaman Sukses
+        window.scrollTo(0,0)
+        setStep(9) 
+
+    } catch (error) {
+        console.error("Error saving survey:", error)
+        alert("Terjadi kesalahan saat menyimpan data. Mohon periksa koneksi internet Anda dan coba lagi.")
+    }
   }
 
   const handleBack = () => {
