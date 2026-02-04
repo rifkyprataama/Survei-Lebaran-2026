@@ -16,24 +16,24 @@ import { Separator } from "@/components/ui/separator"
 import StepOne from "./steps/StepOne"
 import StepTwo from "./steps/StepTwo"
 import StepThree from "./steps/StepThree" 
+import StepFour from "./steps/StepFour"
+import StepFive from "./steps/StepFive" // IMPORT STEP 5
 
-// --- DEFINISI GRUP TRANSPORTASI (Kunci Logika Loncat) ---
+// --- DEFINISI GRUP TRANSPORTASI ---
 const TRANS_UMUM = ["Pesawat", "Kereta Api", "Kereta Cepat", "KRL/LRT", "Bus", "Kapal Laut", "Kapal Penyeberangan"]
-// Bagian 4 - Start No 19
 const TRANS_PRIBADI_MOBIL = ["Mobil Travel", "Mobil Sewa", "Taksi Reguler", "Mobil Online", "Mobil Pribadi"] 
-// Bagian 4 - Start No 18
 const TRANS_PRIBADI_MOTOR = ["Sepeda Motor", "Sepeda"] 
 const TRANS_LAINNYA = ["Mudik Gratis", "Lainnya"]
 
 const formSchema = z.object({
   // --- BAGIAN 1 ---
-  usia: z.string().min(1, "Usia wajib diisi"),
-  jenisKelamin: z.string().min(1, "Jenis kelamin wajib diisi"),
-  pendidikan: z.string().min(1, "Pendidikan wajib diisi"),
-  pekerjaan: z.string().min(1, "Pekerjaan wajib diisi"),
-  penghasilan: z.string().min(1, "Penghasilan wajib diisi"),
-  domisiliProv: z.string().min(1, "Provinsi wajib diisi"),
-  domisiliKota: z.string().min(1, "Kota/Kabupaten wajib diisi"),
+  usia: z.string().min(1, "Wajib diisi"),
+  jenisKelamin: z.string().min(1, "Wajib diisi"),
+  pendidikan: z.string().min(1, "Wajib diisi"),
+  pekerjaan: z.string().min(1, "Wajib diisi"),
+  penghasilan: z.string().min(1, "Wajib diisi"),
+  domisiliProv: z.string().min(1, "Wajib diisi"),
+  domisiliKota: z.string().min(1, "Wajib diisi"),
   rencanaMudik: z.enum(["Ya", "Tidak"]),
   
   // --- BAGIAN 2 ---
@@ -50,6 +50,25 @@ const formSchema = z.object({
   totalDana: z.string().optional(),
   pertimbanganModa: z.string().optional(),
   modaTransportasi: z.string().optional(),
+
+  // --- BAGIAN 4 ---
+  jalurMotor: z.string().optional(), 
+  jalurMobil: z.string().optional(), 
+  namaTol: z.string().optional(),    
+  diskonTol: z.string().optional(),  
+  rekayasaLalin: z.string().optional(), 
+  rencanaIstirahat: z.string().optional(), 
+  lokasiRestArea: z.string().optional(),   
+  mediaTol: z.string().optional(),   
+  kebiasaanIstirahat: z.string().optional(), 
+  durasiIstirahat: z.string().optional(),    
+  biayaBBM: z.string().optional(),           
+
+  // --- BAGIAN 5 (BARU) ---
+  transportKeTerminal: z.string().optional(),
+  transportDariTerminal: z.string().optional(),
+  waktuBeliTiket: z.string().optional(),
+  modaAlternatif: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -62,25 +81,16 @@ export default function SurveyWizard() {
     resolver: zodResolver(formSchema),
     mode: "onChange",
     defaultValues: {
-      usia: "",
-      jenisKelamin: "",
-      pendidikan: "",
-      pekerjaan: "",
-      penghasilan: "",
-      domisiliProv: "",
-      domisiliKota: "",
-      rencanaMudik: undefined,
-      alasanTidakMudik: "",
-      jumlahOrang: "",
-      alasanPerjalanan: "",
-      tujuanProvinsi: "",
-      tujuanKota: "",
-      tanggalPergi: "",
-      jamPergi: "",
-      lamaDiTujuan: "",
-      totalDana: "",
-      pertimbanganModa: "",
-      modaTransportasi: "",
+      usia: "", jenisKelamin: "", pendidikan: "", pekerjaan: "", penghasilan: "",
+      domisiliProv: "", domisiliKota: "", rencanaMudik: undefined, alasanTidakMudik: "",
+      jumlahOrang: "", alasanPerjalanan: "", tujuanProvinsi: "", tujuanKota: "",
+      tanggalPergi: "", jamPergi: "", lamaDiTujuan: "", totalDana: "", pertimbanganModa: "", modaTransportasi: "",
+      // Bagian 4
+      jalurMotor: "", jalurMobil: "", namaTol: "", diskonTol: "", rekayasaLalin: "",
+      rencanaIstirahat: "", lokasiRestArea: "", mediaTol: "",
+      kebiasaanIstirahat: "", durasiIstirahat: "", biayaBBM: "",
+      // Bagian 5 (Baru)
+      transportKeTerminal: "", transportDariTerminal: "", waktuBeliTiket: "", modaAlternatif: ""
     },
   })
 
@@ -117,7 +127,6 @@ export default function SurveyWizard() {
 
   // LOGIKA NAVIGASI 3 -> 4/5/6
   const handleNextStep3 = async () => {
-    // 1. Validasi Manual
     const fieldsStep3: (keyof FormValues)[] = [
         "jumlahOrang", "alasanPerjalanan", "tujuanProvinsi", "tujuanKota",
         "tanggalPergi", "jamPergi", "lamaDiTujuan", "totalDana",
@@ -136,35 +145,72 @@ export default function SurveyWizard() {
 
     if (!isAllValid) return 
 
-    // 2. Logika Loncat
     const moda = form.getValues("modaTransportasi")
     window.scrollTo(0, 0)
 
     // A. Angkutan Umum -> Bagian 5
-    if (moda && TRANS_UMUM.includes(moda)) {
-        setStep(5)
-        return
-    }
+    if (moda && TRANS_UMUM.includes(moda)) { setStep(5); return }
 
-    // B. Mobil/Travel/Taksi -> Bagian 4 (Start No 19)
-    if (moda && TRANS_PRIBADI_MOBIL.includes(moda)) {
-        setStep(4)
-        return
-    }
+    // B. Mobil/Travel/Taksi/Motor -> Bagian 4
+    if (moda && (TRANS_PRIBADI_MOBIL.includes(moda) || TRANS_PRIBADI_MOTOR.includes(moda))) { setStep(4); return }
 
-    // C. Motor/Sepeda -> Bagian 4 (Start No 18)
-    if (moda && TRANS_PRIBADI_MOTOR.includes(moda)) {
-        setStep(4)
-        return
-    }
-
-    // D. Lainnya -> Bagian 6
-    if (moda && TRANS_LAINNYA.includes(moda)) {
-        setStep(6)
-        return
-    }
+    // C. Lainnya -> Bagian 6
+    if (moda && TRANS_LAINNYA.includes(moda)) { setStep(6); return }
     
     setStep(6) // Fallback
+  }
+
+  // LOGIKA STEP 4 -> 6
+  const handleNextStep4 = async () => {
+    const moda = form.getValues("modaTransportasi")
+    const isMotor = moda && TRANS_PRIBADI_MOTOR.includes(moda)
+    
+    let isValid = true
+
+    if (isMotor) {
+        if (!form.getValues("jalurMotor")) { form.setError("jalurMotor", { type: "manual", message: "Wajib diisi" }); isValid = false; }
+    } else {
+        const jalur = form.getValues("jalurMobil")
+        if (!jalur) { form.setError("jalurMobil", { type: "manual", message: "Wajib diisi" }); isValid = false; }
+        
+        if (jalur === "Jalan Tol") {
+            const tolFields: (keyof FormValues)[] = ["namaTol", "diskonTol", "rekayasaLalin", "rencanaIstirahat", "mediaTol"]
+            tolFields.forEach(f => {
+                if(!form.getValues(f)) { form.setError(f, { type: "manual", message: "Wajib diisi" }); isValid = false; }
+            })
+            if (form.getValues("rencanaIstirahat") === "Ya" && !form.getValues("lokasiRestArea")) {
+                 form.setError("rencanaIstirahat", { type: "manual", message: "Lokasi wajib diisi" }); isValid = false;
+            }
+        }
+    }
+
+    const commonFields: (keyof FormValues)[] = ["kebiasaanIstirahat", "durasiIstirahat", "biayaBBM"]
+    commonFields.forEach(f => {
+        if (!form.getValues(f)) { form.setError(f, { type: "manual", message: "Wajib diisi" }); isValid = false; }
+    })
+
+    if (!isValid) return
+
+    window.scrollTo(0, 0)
+    setStep(6) 
+  }
+
+  // LOGIKA STEP 5 -> 6 (BARU)
+  const handleNextStep5 = async () => {
+    const fieldsStep5: (keyof FormValues)[] = ["transportKeTerminal", "transportDariTerminal", "waktuBeliTiket", "modaAlternatif"]
+    let isValid = true
+    
+    fieldsStep5.forEach(f => {
+        if(!form.getValues(f)) {
+            form.setError(f, { type: "manual", message: "Wajib diisi" })
+            isValid = false
+        }
+    })
+
+    if(!isValid) return
+
+    window.scrollTo(0, 0)
+    setStep(6) // Lanjut ke Bagian 6
   }
 
   // LOGIKA KEMBALI
@@ -172,54 +218,17 @@ export default function SurveyWizard() {
     window.scrollTo(0,0)
     const currentModa = form.getValues("modaTransportasi")
 
-    // Dari Bagian 6
     if (step === 6) {
-        if (currentModa && TRANS_LAINNYA.includes(currentModa)) {
-            setStep(3) // Kembali ke 3 jika dari jalur "Lainnya"
-        } else {
-            setStep(5) // Normal flow
-        }
+        if (currentModa && TRANS_LAINNYA.includes(currentModa)) { setStep(3) } 
+        else if (currentModa && TRANS_UMUM.includes(currentModa)) { setStep(5) } 
+        else { setStep(4) }
         return
     }
 
-    // Dari Bagian 5
-    if (step === 5) {
-        if (currentModa && TRANS_UMUM.includes(currentModa)) {
-            setStep(3) // Kembali ke 3 jika dari jalur "Angkutan Umum"
-        } else {
-            setStep(4) // Normal flow
-        }
-        return
-    }
-
-    // Dari Bagian 4
-    if (step === 4) {
-        setStep(3) // Bagian 4 selalu berasal dari Bagian 3
-        return
-    }
-
-    // Dari Bagian 3
-    if (step === 3) {
-        setStep(1) // Lewati Bagian 2
-        return
-    }
-
+    if (step === 5) { setStep(3); return; } // Umum -> 3
+    if (step === 4) { setStep(3); return; } // Pribadi -> 3
+    if (step === 3) { setStep(1); return; } 
     setStep((prev) => prev - 1)
-  }
-
-  // --- HELPER UNTUK PLACEHOLDER TEXT ---
-  const getPlaceholderText = () => {
-    const moda = form.getValues("modaTransportasi")
-    
-    if (step === 4) {
-        if (moda && TRANS_PRIBADI_MOTOR.includes(moda)) {
-            return "Anda memilih Motor/Sepeda. Formulir Bagian 4 ini akan dimulai dari Nomor 18."
-        }
-        if (moda && TRANS_PRIBADI_MOBIL.includes(moda)) {
-            return "Anda memilih Mobil/Travel. Formulir Bagian 4 ini akan dimulai dari Nomor 19 (Nomor 18 dilewati)."
-        }
-    }
-    return `Silakan berikan teks soal untuk Bagian ${step}.`
   }
 
   // --- RENDER ---
@@ -236,7 +245,6 @@ export default function SurveyWizard() {
         </CardHeader>
         <ScrollArea className="flex-1 w-full p-0 bg-white">
           <div className="p-6 text-sm text-slate-700 leading-relaxed space-y-6">
-            {/* Teks Dokumen Lengkap */}
             <p className="font-semibold text-slate-900">Bapak/Ibu yang terhormat,</p>
             <p className="text-justify">Badan Kebijakan Transportasi Kementerian Perhubungan melakukan survei persepsi masyarakat guna memprakirakan mobilitas masyarakat pada libur Lebaran 2026...</p>
             <Separator className="bg-slate-200" />
@@ -304,7 +312,23 @@ export default function SurveyWizard() {
           </>
         )}
 
-        {step >= 4 && (
+        {step === 4 && (
+          <>
+             <StepFour form={form} />
+             <div className="pt-4"><Button type="button" onClick={handleNextStep4} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut ke Bagian 6</Button></div>
+          </>
+        )}
+
+        {/* --- STEP 5 (BARU) --- */}
+        {step === 5 && (
+          <>
+             <StepFive form={form} />
+             <div className="pt-4"><Button type="button" onClick={handleNextStep5} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut ke Bagian 6</Button></div>
+          </>
+        )}
+
+        {/* --- PLACEHOLDER BAGIAN 6 --- */}
+        {step >= 6 && (
             <Card className="border-t-[6px] border-yellow-500 shadow-sm mt-10">
                 <CardHeader><CardTitle>BAGIAN {step} (Sedang Dibuat)</CardTitle></CardHeader>
                 <div className="p-6 space-y-4">
@@ -313,7 +337,7 @@ export default function SurveyWizard() {
                     <strong> {form.getValues("modaTransportasi")}</strong>.
                 </p>
                 <div className="p-4 bg-slate-100 rounded border border-slate-200 font-mono text-sm text-blue-800">
-                    {getPlaceholderText()}
+                   {step === 6 && "Formulir Angkutan Lainnya/Gratis akan muncul di sini."}
                 </div>
                 <Button type="button" onClick={handleBack} variant="outline">Kembali ke Bagian Sebelumnya</Button>
                 </div>
