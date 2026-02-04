@@ -27,7 +27,7 @@ export default function StepThree({ form }: StepProps) {
   return (
     <Card className="border-t-[6px] border-blue-600 shadow-sm animate-in fade-in slide-in-from-right duration-500">
       <CardHeader>
-        <CardTitle>BAGIAN 3 : Yang Melakukan Perjalanan</CardTitle>
+        <CardTitle>Yang Melakukan Perjalanan</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
 

@@ -13,7 +13,7 @@ export default function StepTwo({ form }: StepProps) {
   return (
     <Card className="border-t-[6px] border-blue-600 shadow-sm animate-in fade-in slide-in-from-right duration-500">
       <CardHeader>
-        <CardTitle>BAGIAN 2 : Yang Tidak Melakukan Perjalanan</CardTitle>
+        <CardTitle>Yang Tidak Melakukan Perjalanan</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         
@@ -50,7 +50,6 @@ export default function StepTwo({ form }: StepProps) {
             </FormItem>
           )}
         />
-
       </CardContent>
     </Card>
   )

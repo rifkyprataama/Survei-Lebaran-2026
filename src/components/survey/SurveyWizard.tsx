@@ -5,11 +5,11 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card" // Update Import
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Form } from "@/components/ui/form"
-import { FileText, ShieldCheck, ChevronRight, ArrowLeft, Send, CheckCircle2 } from "lucide-react" // Tambah Icon CheckCircle2
+import { FileText, ShieldCheck, ChevronRight, ArrowLeft, Send, CheckCircle2 } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
 // Import Components
@@ -177,7 +177,7 @@ export default function SurveyWizard() {
             const tolFields: (keyof FormValues)[] = ["namaTol", "diskonTol", "rekayasaLalin", "rencanaIstirahat", "mediaTol"]
             tolFields.forEach(f => { if(!form.getValues(f)) { form.setError(f, { type: "manual", message: "Wajib diisi" }); isValid = false; } })
             if (form.getValues("rencanaIstirahat") === "Ya" && !form.getValues("lokasiRestArea")) {
-                 form.setError("rencanaIstirahat", { type: "manual", message: "Lokasi wajib diisi" }); isValid = false;
+                  form.setError("rencanaIstirahat", { type: "manual", message: "Lokasi wajib diisi" }); isValid = false;
             }
         }
     }
@@ -305,7 +305,7 @@ export default function SurveyWizard() {
         <ScrollArea className="flex-1 w-full p-0 bg-white">
           <div className="p-6 text-sm text-slate-700 leading-relaxed space-y-6">
             <p className="font-semibold text-slate-900">Bapak/Ibu yang terhormat,</p>
-            <p className="text-justify">Badan Kebijakan Transportasi Kementerian Perhubungan melakukan survei persepsi masyarakat guna memprakirakan mobilitas masyarakat pada libur Lebaran 2026...</p>
+            <p className="text-justify">Badan Kebijakan Transportasi Kementerian Perhubungan melakukan survei persepsi masyarakat guna memprakirakan mobilitas masyarakat pada libur Lebaran 2026.</p>
             <Separator className="bg-slate-200" />
             <div className="bg-slate-50 border border-slate-200 rounded-lg p-5 space-y-4 shadow-sm">
               <h3 className="font-bold text-blue-900 text-center text-sm uppercase tracking-wide border-b border-blue-100 pb-3 leading-relaxed">Persetujuan Penggunaan Data Pribadi</h3>
@@ -313,7 +313,7 @@ export default function SurveyWizard() {
               <ol className="list-decimal list-inside space-y-1 ml-1 font-medium text-slate-800 text-xs md:text-sm bg-white p-3 rounded border border-slate-100">
                 <li>Nomor telepon</li><li>Kode Provinsi dan Kabupaten</li><li>Usia</li><li>Pekerjaan</li><li>Pendidikan</li><li>Penghasilan</li>
               </ol>
-              <p className="text-justify text-xs md:text-sm">Dengan menyetujui halaman ini dan mengklik <strong>"Setuju dan Lanjutkan"</strong>, saya memberikan wewenang...</p>
+              <p className="text-justify text-xs md:text-sm">Dengan menyetujui halaman ini dan mengklik <strong>"Saya menyetujui persyaratan"</strong>, saya memberikan wewenang...</p>
               <div className="flex gap-3 items-start bg-blue-50/50 p-3 rounded border border-blue-100 mt-2">
                 <ShieldCheck className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
                 <p className="text-xs text-blue-800 italic text-justify">Kemenhub dan Pihak Ketiga memastikan bahwa ketika mentransfer data pribadi ini telah dilakukan enkripsi...</p>
@@ -324,11 +324,11 @@ export default function SurveyWizard() {
           </div>
         </ScrollArea>
         <div className="p-5 bg-white border-t border-slate-200 shrink-0 z-10 shadow-[0_-5px_15px_rgba(0,0,0,0.05)]">
-           <div className="flex items-start space-x-3 mb-4 p-3 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 cursor-pointer" onClick={() => setIsAgreed(!isAgreed)}>
-             <Checkbox checked={isAgreed} onCheckedChange={(c) => setIsAgreed(!!c)} className="mt-1" />
-             <label className="text-sm font-medium">Saya menyetujui persyaratan.</label>
-           </div>
-           <Button onClick={() => { window.scrollTo(0,0); setStep(1); }} disabled={!isAgreed} className="w-full h-12 bg-blue-800 hover:bg-blue-900 text-white shadow-lg">Setuju dan Lanjutkan</Button>
+          <div className="flex items-start space-x-3 mb-4 p-3 border border-slate-200 rounded-lg bg-slate-50 hover:bg-slate-100 cursor-pointer" onClick={() => setIsAgreed(!isAgreed)}>
+            <Checkbox checked={isAgreed} onCheckedChange={(c) => setIsAgreed(!!c)} className="mt-1" />
+            <label className="text-sm font-medium">Saya menyetujui persyaratan.</label>
+          </div>
+          <Button onClick={() => { window.scrollTo(0,0); setStep(1); }} disabled={!isAgreed} className="w-full h-12 bg-blue-800 hover:bg-blue-900 text-white shadow-lg">Setuju dan Lanjutkan</Button>
         </div>
       </Card>
     )
@@ -374,29 +374,27 @@ export default function SurveyWizard() {
         </Button>
 
         {step === 1 && (<><StepOne form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep1} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut</Button></div></>)}
-        {step === 2 && (<><StepTwo form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep2} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut ke Bagian 8</Button></div></>)}
+        {step === 2 && (<><StepTwo form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep2} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut</Button></div></>)}
         {step === 3 && (<><StepThree form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep3} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut</Button></div></>)}
-        {step === 4 && (<><StepFour form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep4} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut ke Bagian 6</Button></div></>)}
-        {step === 5 && (<><StepFive form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep5} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut ke Bagian 6</Button></div></>)}
-        {step === 6 && (<><StepSix form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep6} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut ke Bagian 7</Button></div></>)}
-        {step === 7 && (<><StepSeven form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep7} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut ke Bagian 8</Button></div></>)}
-        
+        {step === 4 && (<><StepFour form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep4} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut</Button></div></>)}
+        {step === 5 && (<><StepFive form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep5} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut</Button></div></>)}
+        {step === 6 && (<><StepSix form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep6} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut</Button></div></>)}
+        {step === 7 && (<><StepSeven form={form} /><div className="pt-4"><Button type="button" onClick={handleNextStep7} className="w-full h-12 text-lg font-bold bg-blue-800 hover:bg-blue-900 shadow-lg">Lanjut</Button></div></>)} 
         {step === 8 && (
           <>
-             <StepEight form={form} />
-             <div className="pt-4">
-                <Button 
-                    type="button" 
-                    onClick={handleFinalSubmit} 
-                    className="w-full h-12 text-lg font-bold bg-green-700 hover:bg-green-800 shadow-lg text-white"
-                >
-                    <Send className="w-5 h-5 mr-2" />
-                    Kirim Survei
-                </Button>
-             </div>
+            <StepEight form={form} />
+              <div className="pt-4">
+                  <Button 
+                      type="button" 
+                      onClick={handleFinalSubmit} 
+                      className="w-full h-12 text-lg font-bold bg-green-700 hover:bg-green-800 shadow-lg text-white"
+                  >
+                      <Send className="w-5 h-5 mr-2" />
+                      Kirim Survei
+                  </Button>
+              </div>
           </>
         )}
-
       </form>
     </Form>
   )

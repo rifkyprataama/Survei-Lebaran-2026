@@ -19,7 +19,7 @@ export default function StepEight({ form }: StepProps) {
   return (
     <Card className="border-t-[6px] border-green-600 shadow-sm animate-in fade-in slide-in-from-right duration-500">
       <CardHeader>
-        <CardTitle>BAGIAN 8 : Evaluasi & Data Diri</CardTitle>
+        <CardTitle>Evaluasi & Data Diri</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
 
@@ -209,7 +209,6 @@ export default function StepEight({ form }: StepProps) {
         <div className="bg-green-50 border border-green-200 p-4 rounded text-center text-green-800 font-bold text-sm">
           TERIMA KASIH ATAS PARTISIPASI DAN JAWABAN ANDA
         </div>
-
       </CardContent>
     </Card>
   )

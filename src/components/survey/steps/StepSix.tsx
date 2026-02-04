@@ -27,7 +27,7 @@ export default function StepSix({ form }: StepProps) {
   return (
     <Card className="border-t-[6px] border-blue-600 shadow-sm animate-in fade-in slide-in-from-right duration-500">
       <CardHeader>
-        <CardTitle>BAGIAN 6 : Pulang/Kembali</CardTitle>
+        <CardTitle>Pulang/Kembali</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
 
@@ -107,11 +107,11 @@ export default function StepSix({ form }: StepProps) {
                 <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Ya" id="sama-y" />
-                    <label htmlFor="sama-y" className="cursor-pointer">a. Ya (Lompat ke No 5)</label>
+                    <label htmlFor="sama-y" className="cursor-pointer">a. Ya</label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Tidak" id="sama-t" />
-                    <label htmlFor="sama-t" className="cursor-pointer">b. Tidak (Pilih moda baru di bawah)</label>
+                    <label htmlFor="sama-t" className="cursor-pointer">b. Tidak</label>
                   </div>
                 </RadioGroup>
               </FormControl>

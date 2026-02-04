@@ -39,11 +39,11 @@ export default function StepFour({ form }: StepProps) {
   return (
     <Card className="border-t-[6px] border-blue-600 shadow-sm animate-in fade-in slide-in-from-right duration-500">
       <CardHeader>
-        <CardTitle>BAGIAN 4 : Pengguna Kendaraan Pribadi</CardTitle>
+        <CardTitle>Pengguna Kendaraan Pribadi</CardTitle>
       </CardHeader>
       <CardContent className="space-y-8">
 
-        {/* --- KONDISI A: PENGGUNA MOTOR (NO 18) --- */}
+        {/* --- KONDISI A: PENGGUNA MOTOR (NO 1) --- */}
         {isMotor && (
           <FormField
             control={form.control}
@@ -51,7 +51,7 @@ export default function StepFour({ form }: StepProps) {
             render={({ field }) => (
               <FormItem>
                 <label className="font-bold text-base text-slate-900 block mb-2">
-                  18. Mana Jalur utama yang akan Anda lewati? <span className="text-red-500">*</span>
+                  1. Mana Jalur utama yang akan Anda lewati? <span className="text-red-500">*</span>
                 </label>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
@@ -71,7 +71,7 @@ export default function StepFour({ form }: StepProps) {
           />
         )}
 
-        {/* --- KONDISI B: PENGGUNA MOBIL (NO 19) --- */}
+        {/* --- KONDISI B: PENGGUNA MOBIL (NO 2) --- */}
         {isMobil && (
           <>
             <FormField
@@ -80,7 +80,7 @@ export default function StepFour({ form }: StepProps) {
               render={({ field }) => (
                 <FormItem>
                   <label className="font-bold text-base text-slate-900 block mb-2">
-                    19. Mana Jalur utama yang akan Anda lewati? <span className="text-red-500">*</span>
+                    2. Mana Jalur utama yang akan Anda lewati? <span className="text-red-500">*</span>
                   </label>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
@@ -131,42 +131,42 @@ export default function StepFour({ form }: StepProps) {
                   name="diskonTol"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <label className="font-bold text-sm text-slate-900">19a. Apabila diberlakukan discount tarif tol, apakah anda akan mengubah jadwal?</label>
+                      <label className="font-bold text-sm text-slate-900">2a. Apabila diberlakukan discount tarif tol, apakah anda akan mengubah jadwal?</label>
                       <RadioGroup onValueChange={field.onChange} defaultValue={field.value}>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak" id="19a-1"/><label htmlFor="19a-1" className="text-sm">a. Tidak</label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Ya" id="19a-2"/><label htmlFor="19a-2" className="text-sm">b. Ya, menyesuaikan diskon</label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak" id="2a-1"/><label htmlFor="2a-1" className="text-sm">a. Tidak</label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Ya" id="2a-2"/><label htmlFor="2a-2" className="text-sm">b. Ya, menyesuaikan diskon</label></div>
                       </RadioGroup>
                       <FormMessage className="text-red-500" />
                     </FormItem>
                   )}
                 />
 
-                {/* 19b. REKAYASA LALIN */}
+                {/* 2b. REKAYASA LALIN */}
                 <FormField
                   control={form.control}
                   name="rekayasaLalin"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <label className="font-bold text-sm text-slate-900">19b. Apabila diberlakukan rekayasa lalu lintas (contra flow/one way), apakah anda mengubah jadwal?</label>
+                      <label className="font-bold text-sm text-slate-900">2b. Apabila diberlakukan rekayasa lalu lintas (contra flow/one way), apakah anda mengubah jadwal?</label>
                       <RadioGroup onValueChange={field.onChange} defaultValue={field.value}>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak" id="19b-1"/><label htmlFor="19b-1" className="text-sm">a. Tidak</label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Ya" id="19b-2"/><label htmlFor="19b-2" className="text-sm">b. Ya, menyesuaikan rekayasa</label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak" id="2b-1"/><label htmlFor="2b-1" className="text-sm">a. Tidak</label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Ya" id="2b-2"/><label htmlFor="2b-2" className="text-sm">b. Ya, menyesuaikan rekayasa</label></div>
                       </RadioGroup>
                       <FormMessage className="text-red-500" />
                     </FormItem>
                   )}
                 />
 
-                {/* 19c. ISTIRAHAT DI TOL */}
+                {/* 2c. ISTIRAHAT DI TOL */}
                 <FormField
                   control={form.control}
                   name="rencanaIstirahat"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <label className="font-bold text-sm text-slate-900">19c. Apakah anda berencana istirahat di rest area tol?</label>
+                      <label className="font-bold text-sm text-slate-900">2c. Apakah anda berencana istirahat di rest area tol?</label>
                       <RadioGroup onValueChange={field.onChange} defaultValue={field.value}>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak" id="19c-1"/><label htmlFor="19c-1" className="text-sm">a. Tidak istirahat</label></div>
-                        <div className="flex items-center space-x-2"><RadioGroupItem value="Ya" id="19c-2"/><label htmlFor="19c-2" className="text-sm">b. Ya istirahat</label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Tidak" id="2c-1"/><label htmlFor="2c-1" className="text-sm">a. Tidak istirahat</label></div>
+                        <div className="flex items-center space-x-2"><RadioGroupItem value="Ya" id="2c-2"/><label htmlFor="2c-2" className="text-sm">b. Ya istirahat</label></div>
                       </RadioGroup>
                       {/* INPUT TEXT JIKA YA */}
                       {rencanaIstirahat === "Ya" && (
@@ -181,13 +181,13 @@ export default function StepFour({ form }: StepProps) {
                   )}
                 />
 
-                {/* 19d. MEDIA INFORMASI */}
+                {/* 2d. MEDIA INFORMASI */}
                 <FormField
                   control={form.control}
                   name="mediaTol"
                   render={({ field }) => (
                     <FormItem>
-                      <label className="font-bold text-sm text-slate-900">19d. Dari media mana anda tahu info tol?</label>
+                      <label className="font-bold text-sm text-slate-900">2d. Dari media mana anda tahu info tol?</label>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl><SelectTrigger className="bg-white"><SelectValue placeholder="Pilih Media..." /></SelectTrigger></FormControl>
                         <SelectContent>
@@ -213,14 +213,14 @@ export default function StepFour({ form }: StepProps) {
 
         {/* --- PERTANYAAN UMUM (SEMUA TIPE KENDARAAN) --- */}
         
-        {/* 20. KEBIASAAN ISTIRAHAT */}
+        {/* 3. KEBIASAAN ISTIRAHAT */}
         <FormField
           control={form.control}
           name="kebiasaanIstirahat"
           render={({ field }) => (
             <FormItem>
               <label className="font-bold text-base text-slate-900 block mb-2">
-                20. Dalam melakukan perjalanan apakah Anda melakukan istirahat? <span className="text-red-500">*</span>
+                3. Dalam melakukan perjalanan apakah Anda melakukan istirahat? <span className="text-red-500">*</span>
               </label>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
@@ -242,14 +242,14 @@ export default function StepFour({ form }: StepProps) {
           )}
         />
 
-        {/* 21. DURASI ISTIRAHAT */}
+        {/* 4. DURASI ISTIRAHAT */}
         <FormField
           control={form.control}
           name="durasiIstirahat"
           render={({ field }) => (
             <FormItem>
               <label className="font-bold text-base text-slate-900 block mb-2">
-                21. Berapa lama biasanya Anda beristirahat di rest area? <span className="text-red-500">*</span>
+                4. Berapa lama biasanya Anda beristirahat di rest area? <span className="text-red-500">*</span>
               </label>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
@@ -270,14 +270,14 @@ export default function StepFour({ form }: StepProps) {
           )}
         />
 
-        {/* 22. BIAYA TRANSPORT */}
+        {/* 5. BIAYA TRANSPORT */}
         <FormField
           control={form.control}
           name="biayaBBM"
           render={({ field }) => (
             <FormItem>
               <label className="font-bold text-base text-slate-900 block mb-2">
-                22. Perkiraan biaya transportasi pulang dan pergi (BBM & Tol)? <span className="text-red-500">*</span>
+                5. Perkiraan biaya transportasi pulang dan pergi (BBM & Tol)? <span className="text-red-500">*</span>
               </label>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>

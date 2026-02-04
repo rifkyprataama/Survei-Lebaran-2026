@@ -72,7 +72,7 @@ export default function StepOne({ form }: StepProps) {
 
       <Card className="border-t-[6px] border-blue-600 shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
         <CardHeader>
-          <CardTitle>BAGIAN 1 : Karakteristik Responden</CardTitle>
+          <CardTitle>Karakteristik Responden</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           
@@ -119,7 +119,7 @@ export default function StepOne({ form }: StepProps) {
             render={({ field }) => (
               <FormItem className="space-y-2">
                 <label className="font-bold text-base text-slate-900">
-                  2. Jenis kelamin: <span className="text-red-500">*</span>
+                  2. Jenis kelamin <span className="text-red-500">*</span>
                 </label>
                 <FormControl>
                   <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-2 gap-4">
@@ -306,11 +306,11 @@ export default function StepOne({ form }: StepProps) {
                   <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="space-y-2 mt-2">
                     <div className={`flex items-center space-x-3 rounded-lg border p-4 hover:bg-slate-50 cursor-pointer transition-all has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 has-[:checked]:shadow-sm ${errors.rencanaMudik ? "border-red-500 bg-red-50" : ""}`}>
                       <RadioGroupItem value="Ya" id="mudik-y" className="text-blue-700" />
-                      <label htmlFor="mudik-y" className="cursor-pointer font-medium w-full font-normal text-slate-700">a. Ya (Lanjut ke Bagian 3)</label>
+                      <label htmlFor="mudik-y" className="cursor-pointer font-medium w-full font-normal text-slate-700">a. Ya</label>
                     </div>
                     <div className={`flex items-center space-x-3 rounded-lg border p-4 hover:bg-slate-50 cursor-pointer transition-all has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 has-[:checked]:shadow-sm ${errors.rencanaMudik ? "border-red-500 bg-red-50" : ""}`}>
                       <RadioGroupItem value="Tidak" id="mudik-t" className="text-blue-700" />
-                      <label htmlFor="mudik-t" className="cursor-pointer font-medium w-full font-normal text-slate-700">b. Tidak (Lanjut ke Bagian 2)</label>
+                      <label htmlFor="mudik-t" className="cursor-pointer font-medium w-full font-normal text-slate-700">b. Tidak</label>
                     </div>
                   </RadioGroup>
                 </FormControl>
@@ -318,7 +318,6 @@ export default function StepOne({ form }: StepProps) {
               </FormItem>
             )}
           />
-
         </CardContent>
       </Card>
     </>

@@ -35,7 +35,7 @@ export default function StepSeven({ form }: StepProps) {
   return (
     <Card className="border-t-[6px] border-blue-600 shadow-sm animate-in fade-in slide-in-from-right duration-500">
       <CardHeader>
-        <CardTitle>BAGIAN 7 : Evaluasi & Faktor WFA</CardTitle>
+        <CardTitle>Evaluasi & Faktor WFA</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
 
@@ -82,11 +82,11 @@ export default function StepSeven({ form }: StepProps) {
                 <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex flex-col space-y-2">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Setuju" id="wfa-y" />
-                    <label htmlFor="wfa-y" className="cursor-pointer">a. Setuju (Lanjut ke pertanyaan berikutnya)</label>
+                    <label htmlFor="wfa-y" className="cursor-pointer">a. Setuju</label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="Tidak Setuju" id="wfa-t" />
-                    <label htmlFor="wfa-t" className="cursor-pointer">b. Tidak Setuju (Lompat ke Bagian 8)</label>
+                    <label htmlFor="wfa-t" className="cursor-pointer">b. Tidak Setuju</label>
                   </div>
                 </RadioGroup>
               </FormControl>
