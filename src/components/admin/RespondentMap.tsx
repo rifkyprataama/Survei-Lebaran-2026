@@ -4,7 +4,7 @@ import { MapContainer, TileLayer, CircleMarker, Tooltip, Polyline } from "react-
 import "leaflet/dist/leaflet.css"
 import { useMemo } from "react"
 
-// Koordinat Provinsi (Diperlengkap)
+// Koordinat Provinsi Lengkap
 const PROVINSI_COORDS: Record<string, [number, number]> = {
   "Aceh": [4.6951, 96.7494], "Sumatera Utara": [2.1154, 99.5451], "Sumatera Barat": [-0.7399, 100.8000], "Riau": [0.2933, 101.7068], "Jambi": [-1.6101, 103.6131], "Sumatera Selatan": [-3.3194, 104.9145], "Bengkulu": [-3.5778, 102.3464], "Lampung": [-4.5585, 105.4068], "Kepulauan Bangka Belitung": [-2.7410, 106.4406], "Kepulauan Riau": [3.9456, 108.1428],
   "DKI Jakarta": [-6.2088, 106.8456], "Jawa Barat": [-6.9175, 107.6191], "Jawa Tengah": [-7.1510, 110.1403], "DI Yogyakarta": [-7.7955, 110.3695], "Jawa Timur": [-7.5360, 112.2384], "Banten": [-6.4058, 106.0640],
@@ -16,6 +16,7 @@ const PROVINSI_COORDS: Record<string, [number, number]> = {
 }
 
 export default function RespondentMap({ data }: { data: any[] }) {
+  
   // 1. Data Titik (Jumlah Responden per Provinsi Asal)
   const markers = useMemo(() => {
     const counts: Record<string, number> = {}
@@ -40,16 +41,27 @@ export default function RespondentMap({ data }: { data: any[] }) {
 
   return (
     <div className="h-[400px] w-full rounded-xl overflow-hidden shadow-sm border border-slate-200 z-0 relative">
-      <MapContainer center={[-2.5489, 118.0149]} zoom={5} scrollWheelZoom={false} className="h-full w-full">
+      {/* PERBAIKAN UTAMA: Prop 'key'
+        Dengan menambahkan key unik berdasarkan panjang data atau timestamp, 
+        React akan menghapus peta lama dan membuat peta baru setiap kali data berubah.
+        Ini mencegah error "Map container is already initialized".
+      */}
+      <MapContainer 
+        key={`map-${data.length}-${Date.now()}`} 
+        center={[-2.5489, 118.0149]} 
+        zoom={5} 
+        scrollWheelZoom={false} 
+        className="h-full w-full"
+      >
         <TileLayer
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
         
-        {/* Render Garis Arus Mudik (Curved lines simulated usually via plugins, but straight lines for now) */}
+        {/* Render Garis Arus Mudik */}
         {flows.map((flow) => (
             <Polyline 
-                key={flow.id} 
+                key={`flow-${flow.id}`} 
                 positions={[flow.from, flow.to]} 
                 pathOptions={{ color: '#f59e0b', weight: 2, opacity: 0.6, dashArray: '5, 10' }} 
             >
@@ -63,9 +75,9 @@ export default function RespondentMap({ data }: { data: any[] }) {
           if (!coords) return null
           return (
             <CircleMarker 
-              key={prov} 
+              key={`marker-${prov}`} 
               center={coords} 
-              radius={6 + Math.log(count) * 4} // Skala logaritmik agar tidak terlalu besar
+              radius={6 + Math.log(count) * 4} 
               pathOptions={{ color: '#2563eb', fillColor: '#3b82f6', fillOpacity: 0.8 }}
             >
               <Tooltip direction="top" offset={[0, -10]} opacity={1}>

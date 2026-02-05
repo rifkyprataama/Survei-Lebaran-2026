@@ -17,7 +17,7 @@ const RespondentMap = dynamic(() => import("@/components/admin/RespondentMap"), 
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-// Tipe Data (Diupdate menambahkan tanggalPergi)
+// Tipe Data
 type Responden = {
   id: string
   createdAt: string
@@ -27,7 +27,7 @@ type Responden = {
   tujuanProvinsi: string
   modaTransportasi: string
   persepsi2025: string
-  tanggalPergi?: string // Tambahan untuk logika Puncak Arus
+  tanggalPergi?: string
 }
 
 export default function AdminDashboard() {
@@ -50,13 +50,12 @@ export default function AdminDashboard() {
   // --- LOGIKA STATISTIK ---
   const total = data.length
   
-  // 1. Hitung Pemudik (yang tujuannya bukan "Tidak Mudik" atau kosong)
+  // 1. Hitung Pemudik
   const pemudik = data.filter(d => d.tujuanProvinsi && d.tujuanProvinsi !== "Tidak Mudik").length
   const persenPemudik = total > 0 ? ((pemudik / total) * 100).toFixed(1) : "0"
   
-  // 2. Data Chart Moda (Perbaikan logika null)
+  // 2. Data Chart Moda
   const modaData = data.reduce((acc: any[], curr) => {
-    // Gunakan fallback "Lainnya" atau "Belum Memilih" jika null
     const name = curr.modaTransportasi || "Belum Memilih"
     const existing = acc.find((x: any) => x.name === name)
     if (existing) existing.value += 1
@@ -64,13 +63,12 @@ export default function AdminDashboard() {
     return acc
   }, [])
 
-  // Tambah properti 'percent' untuk chart
   const modaChart = modaData.map((m: any) => ({ 
     ...m, 
     percent: total > 0 ? ((m.value / total) * 100).toFixed(1) : 0
   }))
 
-  // 3. Logika PUNCAK ARUS (Dinamis dari Tanggal Pergi)
+  // 3. Logika PUNCAK ARUS
   const puncakArusData = data.reduce((acc: any, curr) => {
       if(curr.tanggalPergi) {
           acc[curr.tanggalPergi] = (acc[curr.tanggalPergi] || 0) + 1
@@ -78,20 +76,24 @@ export default function AdminDashboard() {
       return acc
   }, {})
   
-  // Cari tanggal dengan pemudik terbanyak
   const tanggalPuncak = Object.keys(puncakArusData).length > 0 
       ? Object.keys(puncakArusData).reduce((a, b) => puncakArusData[a] > puncakArusData[b] ? a : b)
       : "Menunggu Data"
 
-  // 4. Cari Tujuan Favorit
-  const tujuanFavorit = data.length > 0 
-    ? (data
-        .filter(d => d.tujuanProvinsi && d.tujuanProvinsi !== "Tidak Mudik")
-        .sort((a,b) => 
-          data.filter(v => v.tujuanProvinsi === a.tujuanProvinsi).length - 
-          data.filter(v => v.tujuanProvinsi === b.tujuanProvinsi).length
-        ).pop()?.tujuanProvinsi || "-") 
-    : "-"
+  // 4. PERBAIKAN: Logika Tujuan Terfavorit (Frequency Map)
+  // Metode ini lebih cepat dan akurat daripada filter berulang
+  const tujuanStats = data.reduce((acc: any, curr) => {
+    const dest = curr.tujuanProvinsi;
+    // Abaikan data kosong atau "Tidak Mudik"
+    if (dest && dest !== "Tidak Mudik") {
+       acc[dest] = (acc[dest] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  // Urutkan dari yang terbanyak
+  const sortedTujuan = Object.entries(tujuanStats).sort((a:any, b:any) => b[1] - a[1]);
+  const tujuanFavorit = sortedTujuan.length > 0 ? sortedTujuan[0][0] : "Belum Ada Data";
 
   return (
     <div className="space-y-6">
@@ -147,7 +149,7 @@ export default function AdminDashboard() {
               </CardContent>
           </Card>
 
-           {/* PUNCAK ARUS (DINAMIS) */}
+           {/* PUNCAK ARUS */}
            <Card className="bg-white border-l-4 border-l-green-500 shadow-sm">
               <CardContent className="p-6">
                   <div className="flex justify-between items-start">
@@ -167,7 +169,7 @@ export default function AdminDashboard() {
                   <div className="flex justify-between items-start">
                       <div>
                           <p className="text-slate-500 text-sm font-medium">Tujuan Terfavorit</p>
-                          <h3 className="text-xl font-bold mt-1 text-slate-800 truncate max-w-[120px]">
+                          <h3 className="text-xl font-bold mt-1 text-slate-800 truncate max-w-[120px]" title={String(tujuanFavorit)}>
                             {tujuanFavorit}
                           </h3>
                       </div>
@@ -181,7 +183,7 @@ export default function AdminDashboard() {
       {/* ROW 2: CHART & AI INSIGHT */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
-          {/* CHART DONUT (DENGAN LABEL PERSEN) */}
+          {/* CHART DONUT */}
           <Card className="md:col-span-5 shadow-sm border border-slate-200">
               <CardHeader>
                   <CardTitle className="text-base text-slate-800">Proporsi Moda Transportasi</CardTitle>
@@ -216,13 +218,13 @@ export default function AdminDashboard() {
               </CardContent>
           </Card>
 
-          {/* AI INSIGHT (DATA DINAMIS) */}
+          {/* AI INSIGHT */}
           <div className="md:col-span-7 h-full">
               <AiInsight data={data} />
           </div>
       </div>
 
-      {/* ROW 3: GIS MAP (FULL WIDTH) */}
+      {/* ROW 3: GIS MAP */}
       <div className="space-y-2">
            <div className="flex justify-between items-center px-1">
                 <h3 className="font-bold text-slate-700 flex items-center gap-2">
@@ -233,7 +235,7 @@ export default function AdminDashboard() {
           <RespondentMap data={data} />
       </div>
 
-      {/* TOMBOL LINK KE HALAMAN PENGELOLAAN DATA */}
+      {/* TOMBOL LINK KELOLA DATA */}
       <div className="flex justify-center pt-6 pb-10">
         <Link href="/admin/respondents">
             <Button variant="outline" className="gap-2 text-slate-600 hover:text-blue-700 hover:border-blue-300 transition-all">

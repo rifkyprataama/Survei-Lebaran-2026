@@ -11,7 +11,10 @@ import { Save, RefreshCw } from "lucide-react"
 export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <h2 className="text-2xl font-bold text-slate-800">Pengaturan Sistem</h2>
+      <div className="flex flex-col gap-2">
+         <h2 className="text-2xl font-bold text-slate-800">Pengaturan Sistem</h2>
+         <p className="text-slate-500 text-sm">Kelola konfigurasi aplikasi dan keamanan akun administrator.</p>
+      </div>
 
       <Tabs defaultValue="app" className="w-full">
         <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
@@ -42,7 +45,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                     <Label>Versi Sistem</Label>
-                    <Input defaultValue="v1.0.0 (Beta)" disabled className="bg-slate-50" />
+                    <Input defaultValue="v1.0.0 (Beta)" disabled className="bg-slate-50 text-slate-500" />
                 </div>
               </div>
               
@@ -55,7 +58,7 @@ export default function SettingsPage() {
               </div>
             </CardContent>
             <CardFooter className="justify-end border-t pt-4">
-                <Button className="bg-blue-700 gap-2"><Save className="w-4 h-4" /> Simpan Perubahan</Button>
+                <Button className="bg-blue-700 gap-2 hover:bg-blue-800"><Save className="w-4 h-4" /> Simpan Perubahan</Button>
             </CardFooter>
           </Card>
         </TabsContent>
@@ -70,13 +73,13 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input defaultValue="admin@kemenhub.go.id" disabled className="bg-slate-50" />
+                <Input defaultValue="admin@kemenhub.go.id" disabled className="bg-slate-50 text-slate-500" />
               </div>
               <div className="space-y-2">
                 <Label>Password Lama</Label>
                 <Input type="password" placeholder="••••••••" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label>Password Baru</Label>
                     <Input type="password" />
@@ -89,7 +92,7 @@ export default function SettingsPage() {
             </CardContent>
             <CardFooter className="justify-end border-t pt-4 gap-2">
                 <Button variant="outline" className="gap-2"><RefreshCw className="w-4 h-4" /> Reset</Button>
-                <Button className="bg-blue-700 gap-2"><Save className="w-4 h-4" /> Update Password</Button>
+                <Button className="bg-blue-700 gap-2 hover:bg-blue-800"><Save className="w-4 h-4" /> Update Password</Button>
             </CardFooter>
           </Card>
         </TabsContent>
