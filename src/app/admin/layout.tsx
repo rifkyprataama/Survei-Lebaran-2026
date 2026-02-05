@@ -1,25 +1,42 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { 
   LayoutDashboard, 
-  Database, 
   Settings, 
   LogOut, 
   User, 
   Menu,
-  Users, // Icon baru untuk Responden
-  Map    // Icon baru untuk Wilayah
+  Users, 
+  Map 
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import Cookies from "js-cookie"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
-  // --- UPDATE MENU ITEMS DISINI ---
+  // --- LOGIKA LOGOUT ---
+  const handleLogout = () => {
+    // 1. Hapus cookie sesi
+    Cookies.remove("admin_session")
+    // 2. Arahkan kembali ke halaman login
+    router.push("/login")
+  }
+
+  // --- MENU ITEMS ---
   const menuItems = [
     { 
       name: "Dashboard", 
@@ -27,12 +44,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       icon: LayoutDashboard 
     },
     { 
-      name: "Data Responden", // Menu Utama untuk kelola survei
+      name: "Data Responden", 
       href: "/admin/respondents", 
       icon: Users 
     },
     { 
-      name: "Master Wilayah", // Menu untuk referensi Provinsi/Kota
+      name: "Master Wilayah", 
       href: "/admin/master-data", 
       icon: Map 
     },
@@ -88,7 +105,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
                 )}
             </div>
-            <Button variant="destructive" size="sm" className={`w-full mt-4 flex items-center gap-2 bg-red-600 hover:bg-red-700 ${!isSidebarOpen && "px-0 justify-center"}`}>
+            
+            {/* TOMBOL LOGOUT (SIDEBAR) */}
+            <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={handleLogout} // Fungsi logout dipanggil di sini
+                className={`w-full mt-4 flex items-center gap-2 bg-red-600 hover:bg-red-700 ${!isSidebarOpen && "px-0 justify-center"}`}
+            >
                 <LogOut className="w-4 h-4" />
                 {isSidebarOpen && "Keluar"}
             </Button>
@@ -107,9 +131,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                     System Status: <span className="text-green-700 font-semibold">Operational</span>
                 </div>
-                <Button variant="ghost" size="icon" className="rounded-full border border-slate-200 hover:bg-slate-50">
-                    <User className="w-4 h-4 text-slate-600" />
-                </Button>
+                
+                {/* USER ICON DENGAN DROPDOWN */}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full border border-slate-200 hover:bg-slate-50 focus:ring-0">
+                            <User className="w-4 h-4 text-slate-600" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => router.push('/admin/settings')} className="cursor-pointer">
+                            Pengaturan
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout} className="text-red-600 cursor-pointer focus:text-red-600 focus:bg-red-50">
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Keluar
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
             </div>
         </header>
 

@@ -17,7 +17,7 @@ const RespondentMap = dynamic(() => import("@/components/admin/RespondentMap"), 
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-// Tipe Data
+// Tipe Data (Diupdate menambahkan tanggalPergi)
 type Responden = {
   id: string
   createdAt: string
@@ -27,6 +27,7 @@ type Responden = {
   tujuanProvinsi: string
   modaTransportasi: string
   persepsi2025: string
+  tanggalPergi?: string // Tambahan untuk logika Puncak Arus
 }
 
 export default function AdminDashboard() {
@@ -49,13 +50,14 @@ export default function AdminDashboard() {
   // --- LOGIKA STATISTIK ---
   const total = data.length
   
-  // Hitung Pemudik (yang tujuannya bukan "Tidak Mudik" atau kosong)
+  // 1. Hitung Pemudik (yang tujuannya bukan "Tidak Mudik" atau kosong)
   const pemudik = data.filter(d => d.tujuanProvinsi && d.tujuanProvinsi !== "Tidak Mudik").length
   const persenPemudik = total > 0 ? ((pemudik / total) * 100).toFixed(1) : "0"
   
-  // Data Chart Moda
+  // 2. Data Chart Moda (Perbaikan logika null)
   const modaData = data.reduce((acc: any[], curr) => {
-    const name = curr.modaTransportasi || "Tidak Mudik"
+    // Gunakan fallback "Lainnya" atau "Belum Memilih" jika null
+    const name = curr.modaTransportasi || "Belum Memilih"
     const existing = acc.find((x: any) => x.name === name)
     if (existing) existing.value += 1
     else acc.push({ name, value: 1 })
@@ -65,10 +67,23 @@ export default function AdminDashboard() {
   // Tambah properti 'percent' untuk chart
   const modaChart = modaData.map((m: any) => ({ 
     ...m, 
-    percent: ((m.value / total) * 100).toFixed(1) 
+    percent: total > 0 ? ((m.value / total) * 100).toFixed(1) : 0
   }))
 
-  // Cari Tujuan Favorit
+  // 3. Logika PUNCAK ARUS (Dinamis dari Tanggal Pergi)
+  const puncakArusData = data.reduce((acc: any, curr) => {
+      if(curr.tanggalPergi) {
+          acc[curr.tanggalPergi] = (acc[curr.tanggalPergi] || 0) + 1
+      }
+      return acc
+  }, {})
+  
+  // Cari tanggal dengan pemudik terbanyak
+  const tanggalPuncak = Object.keys(puncakArusData).length > 0 
+      ? Object.keys(puncakArusData).reduce((a, b) => puncakArusData[a] > puncakArusData[b] ? a : b)
+      : "Menunggu Data"
+
+  // 4. Cari Tujuan Favorit
   const tujuanFavorit = data.length > 0 
     ? (data
         .filter(d => d.tujuanProvinsi && d.tujuanProvinsi !== "Tidak Mudik")
@@ -132,17 +147,17 @@ export default function AdminDashboard() {
               </CardContent>
           </Card>
 
-           {/* PUNCAK ARUS (PREDIKSI STATIS) */}
+           {/* PUNCAK ARUS (DINAMIS) */}
            <Card className="bg-white border-l-4 border-l-green-500 shadow-sm">
               <CardContent className="p-6">
                   <div className="flex justify-between items-start">
                       <div>
                           <p className="text-slate-500 text-sm font-medium">Puncak Arus (Est)</p>
-                          <h3 className="text-xl font-bold mt-1 text-slate-800">H-3 Lebaran</h3>
+                          <h3 className="text-xl font-bold mt-1 text-slate-800">{tanggalPuncak}</h3>
                       </div>
                       <div className="bg-green-100 p-2 rounded-lg"><Calendar className="w-5 h-5 text-green-600" /></div>
                   </div>
-                  <p className="mt-4 text-xs text-slate-500">Sabtu, 14 Maret 2026</p>
+                  <p className="mt-4 text-xs text-slate-500">Berdasarkan data {total} responden.</p>
               </CardContent>
           </Card>
 
@@ -188,7 +203,12 @@ export default function AdminDashboard() {
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
-                            <RechartsTooltip formatter={(value:any, name:any, props:any) => [`${value} Orang (${props.payload.percent}%)`, name]} />
+                            <RechartsTooltip 
+                                formatter={(value:any, name:any, props:any) => {
+                                    const percent = props.payload?.percent || 0;
+                                    return [`${value} Orang (${percent}%)`, name]
+                                }} 
+                            />
                             <Legend verticalAlign="bottom" height={36} iconType="circle" />
                         </PieChart>
                     </ResponsiveContainer>
@@ -196,7 +216,7 @@ export default function AdminDashboard() {
               </CardContent>
           </Card>
 
-          {/* AI INSIGHT (LEBIH BESAR) */}
+          {/* AI INSIGHT (DATA DINAMIS) */}
           <div className="md:col-span-7 h-full">
               <AiInsight data={data} />
           </div>
