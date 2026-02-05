@@ -1,144 +1,318 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Search, Trash2, Eye, FileText, Download } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { Search, Trash2, Eye, FileSpreadsheet, MapPin, User, Calendar, Bus, AlertCircle, ChevronLeft, ChevronRight, RefreshCw, FileText } from "lucide-react"
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "-"
+  return new Date(dateString).toLocaleDateString('id-ID', {
+    day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  })
+}
 
 export default function RespondentsPage() {
   const [data, setData] = useState<any[]>([])
-  const [filteredData, setFilteredData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState("")
+  
+  // State untuk Detail Modal
   const [selectedData, setSelectedData] = useState<any>(null)
+  
+  // State untuk Delete Confirmation
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
-  // Load Data
-  useEffect(() => {
-    fetch('/api/survei').then(res => res.json()).then(json => {
-        if(json.success) {
-            setData(json.data)
-            setFilteredData(json.data)
-        }
-    })
-  }, [])
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/survei', { cache: 'no-store' })
+      const json = await res.json()
+      if(json.success) setData(json.data)
+    } catch (err) {
+      console.error("Gagal ambil data", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  // Filter Search
-  useEffect(() => {
+  useEffect(() => { fetchData() }, [])
+
+  const filteredData = data.filter(item => {
     const lower = search.toLowerCase()
-    const filtered = data.filter(item => 
-        item.pekerjaan.toLowerCase().includes(lower) || 
-        item.domisiliProv.toLowerCase().includes(lower) ||
-        (item.tujuanProvinsi || "").toLowerCase().includes(lower)
+    return (
+      item.pekerjaan?.toLowerCase().includes(lower) || 
+      item.domisiliProv?.toLowerCase().includes(lower) ||
+      (item.tujuanProvinsi || "").toLowerCase().includes(lower) ||
+      item.modaTransportasi?.toLowerCase().includes(lower)
     )
-    setFilteredData(filtered)
-  }, [search, data])
+  })
 
-  const handleDelete = (id: string) => {
-    if(confirm("Hapus data ini?")) alert("Simulasi: Data dihapus.")
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage, 
+    currentPage * itemsPerPage
+  )
+
+  const handleExport = () => {
+    if (data.length === 0) return alert("Tidak ada data untuk diexport.")
+    const headers = ["ID,Tanggal,Usia,Pekerjaan,Penghasilan,Asal Provinsi,Asal Kota,Tujuan Provinsi,Tujuan Kota,Moda,Alasan,Saran"]
+    const rows = data.map(row => [
+      `"${row.id}"`, `"${new Date(row.createdAt).toISOString()}"`, `"${row.usia}"`, `"${row.pekerjaan}"`, `"${row.penghasilan}"`, `"${row.domisiliProv}"`, `"${row.domisiliKota}"`, `"${row.tujuanProvinsi}"`, `"${row.tujuanKota}"`, `"${row.modaTransportasi}"`, `"${row.alasanPerjalanan}"`, `"${row.saran.replace(/"/g, '""')}"`
+    ].join(","))
+    const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n")
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement("a")
+    link.setAttribute("href", encodedUri)
+    link.setAttribute("download", `Responden_${new Date().toISOString().slice(0,10)}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
+  // 1. Fungsi Buka Modal Hapus
+  const openDeleteModal = (id: string) => {
+    setDeleteId(id)
+    setIsDeleteOpen(true)
+  }
+
+  // 2. Fungsi Eksekusi Hapus
+  const confirmDelete = () => {
+    if (!deleteId) return
+    setData(data.filter(item => item.id !== deleteId))
+    setIsDeleteOpen(false)
+    setDeleteId(null)
   }
 
   return (
-    <div className="space-y-6">
-        <div className="flex justify-between items-center bg-white p-4 rounded-xl border shadow-sm">
+    <div className="space-y-6 max-w-[1600px] mx-auto">
+        
+        {/* HEADER */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-xl border border-slate-200 shadow-sm gap-4">
             <div>
-                <h2 className="text-2xl font-bold text-slate-800">Manajemen Data Responden</h2>
-                <p className="text-slate-500 text-sm">Kelola seluruh data masuk, lihat detail, dan validasi.</p>
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <User className="w-6 h-6 text-blue-600" />
+                    Manajemen Responden
+                </h2>
+                <p className="text-slate-500 text-sm mt-1">
+                    Total <span className="font-bold text-slate-900">{data.length}</span> data masuk.
+                </p>
             </div>
-            <Button variant="outline" className="gap-2 text-green-700 bg-green-50 border-green-200">
-                <Download className="w-4 h-4" /> Export Excel
-            </Button>
+            <div className="flex w-full md:w-auto gap-2">
+                <Button variant="outline" onClick={fetchData} className="flex-1 md:flex-none gap-2">
+                    <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+                </Button>
+                <Button onClick={handleExport} className="flex-1 md:flex-none gap-2 bg-green-600 hover:bg-green-700 text-white shadow-sm">
+                    <FileSpreadsheet className="w-4 h-4" /> Export
+                </Button>
+            </div>
         </div>
 
-        <Card>
-            <CardHeader className="border-b pb-4">
-                <div className="flex items-center justify-between">
-                    <CardTitle>Database Lengkap ({filteredData.length})</CardTitle>
-                    <div className="relative w-72">
-                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-slate-400" />
+        <Card className="shadow-md border-slate-200">
+            <CardHeader className="border-b bg-slate-50/50 pb-4">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="space-y-1 w-full md:w-auto">
+                        <CardTitle>Database Lengkap</CardTitle>
+                        <CardDescription>Cari data responden.</CardDescription>
+                    </div>
+                    <div className="relative w-full md:w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                         <Input 
-                            placeholder="Cari Asal, Tujuan, atau Pekerjaan..." 
-                            className="pl-8"
+                            placeholder="Cari nama, kota, atau moda..." 
+                            className="pl-9 bg-white w-full"
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => { setSearch(e.target.value); setCurrentPage(1); }}
                         />
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="p-0">
-                <Table>
-                    <TableHeader className="bg-slate-50">
-                        <TableRow>
-                            <TableHead>Tanggal</TableHead>
-                            <TableHead>Profil</TableHead>
-                            <TableHead>Asal (Domisili)</TableHead>
-                            <TableHead>Tujuan Mudik</TableHead>
-                            <TableHead>Moda</TableHead>
-                            <TableHead className="text-center">Aksi</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {filteredData.map((row) => (
-                            <TableRow key={row.id}>
-                                <TableCell className="text-xs text-slate-500">
-                                    {new Date(row.createdAt).toLocaleDateString()}
-                                </TableCell>
-                                <TableCell>
-                                    <div className="font-medium">{row.pekerjaan}</div>
-                                    <div className="text-xs text-slate-400">{row.usia}</div>
-                                </TableCell>
-                                <TableCell>{row.domisiliProv}</TableCell>
-                                <TableCell>
-                                    {row.tujuanProvinsi ? (
-                                        <span className="text-green-600 font-medium">{row.tujuanProvinsi}</span>
-                                    ) : <span className="text-slate-300">-</span>}
-                                </TableCell>
-                                <TableCell>{row.modaTransportasi || "-"}</TableCell>
-                                <TableCell className="text-center space-x-2">
-                                    {/* TOMBOL DETAIL (MODAL) */}
-                                    <Dialog>
-                                        <DialogTrigger asChild>
-                                            <Button variant="ghost" size="icon" onClick={() => setSelectedData(row)} className="text-blue-600 bg-blue-50 hover:bg-blue-100">
-                                                <Eye className="w-4 h-4" />
-                                            </Button>
-                                        </DialogTrigger>
-                                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                                            <DialogHeader>
-                                                <DialogTitle>Detail Data Responden</DialogTitle>
-                                            </DialogHeader>
-                                            {selectedData && (
-                                                <div className="grid grid-cols-2 gap-4 text-sm mt-4">
-                                                    <div className="space-y-1"><p className="font-semibold text-slate-500">ID System</p><p>{selectedData.id}</p></div>
-                                                    <div className="space-y-1"><p className="font-semibold text-slate-500">Waktu Input</p><p>{new Date(selectedData.createdAt).toLocaleString()}</p></div>
-                                                    <div className="p-3 bg-slate-50 col-span-2 rounded border font-medium text-blue-800">Bagian 1: Data Diri</div>
-                                                    <div><p className="font-bold">Usia:</p> {selectedData.usia}</div>
-                                                    <div><p className="font-bold">Pekerjaan:</p> {selectedData.pekerjaan}</div>
-                                                    <div><p className="font-bold">Penghasilan:</p> {selectedData.penghasilan}</div>
-                                                    
-                                                    <div className="p-3 bg-slate-50 col-span-2 rounded border font-medium text-blue-800">Bagian 2: Perjalanan</div>
-                                                    <div><p className="font-bold">Asal:</p> {selectedData.domisiliProv}, {selectedData.domisiliKota}</div>
-                                                    <div><p className="font-bold">Tujuan:</p> {selectedData.tujuanProvinsi || "Tidak Mudik"}, {selectedData.tujuanKota}</div>
-                                                    <div><p className="font-bold">Moda:</p> {selectedData.modaTransportasi}</div>
-                                                    <div><p className="font-bold">Alasan:</p> {selectedData.alasanPerjalanan}</div>
-
-                                                    <div className="p-3 bg-slate-50 col-span-2 rounded border font-medium text-blue-800">Lainnya</div>
-                                                    <div className="col-span-2"><p className="font-bold">Saran/Masukan:</p> <p className="italic text-slate-600">"{selectedData.saran}"</p></div>
-                                                </div>
-                                            )}
-                                        </DialogContent>
-                                    </Dialog>
-
-                                    <Button variant="ghost" size="icon" onClick={() => handleDelete(row.id)} className="text-red-500 hover:bg-red-50">
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                </TableCell>
+                <div className="rounded-md border-b overflow-x-auto">
+                    <Table className="min-w-[800px] md:min-w-full">
+                        <TableHeader className="bg-slate-100/50">
+                            <TableRow>
+                                <TableHead className="w-[50px] text-center">#</TableHead>
+                                <TableHead className="w-[200px]">Waktu & Profil</TableHead>
+                                <TableHead className="min-w-[200px]">Rute Perjalanan</TableHead>
+                                <TableHead className="w-[150px]">Moda</TableHead>
+                                <TableHead className="w-[200px] hidden md:table-cell">Alasan</TableHead>
+                                <TableHead className="text-right pr-6">Aksi</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {loading ? (
+                                Array.from({ length: 5 }).map((_, i) => (
+                                    <TableRow key={i}>
+                                        <TableCell colSpan={6} className="h-16 text-center text-slate-400 animate-pulse">Memuat data...</TableCell>
+                                    </TableRow>
+                                ))
+                            ) : paginatedData.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={6} className="h-24 text-center text-slate-500">Data tidak ditemukan.</TableCell>
+                                </TableRow>
+                            ) : (
+                                paginatedData.map((row, index) => (
+                                    <TableRow key={row.id} className="hover:bg-slate-50/80 transition-colors">
+                                        <TableCell className="text-center text-slate-500 text-xs">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="font-semibold text-slate-800 text-sm">{row.pekerjaan}</span>
+                                                <span className="text-xs text-slate-500">{row.usia}</span>
+                                                <span className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                                                    <Calendar className="w-3 h-3" /> {formatDate(row.createdAt).split(',')[0]}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col gap-2 text-sm">
+                                                <div className="flex items-center gap-2 text-slate-600">
+                                                    <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+                                                    <span className="truncate max-w-[120px]">{row.domisiliProv}</span>
+                                                </div>
+                                                <div className="pl-[3px] border-l border-dashed border-slate-300 h-2 ml-1"></div>
+                                                <div className="flex items-center gap-2 font-medium text-slate-900">
+                                                    <MapPin className="w-3 h-3 text-red-500 shrink-0" />
+                                                    {row.tujuanProvinsi === "Tidak Mudik" ? (
+                                                        <span className="text-slate-400 italic">Tidak Mudik</span>
+                                                    ) : (
+                                                        <span className="truncate max-w-[120px]">{row.tujuanProvinsi}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            {row.modaTransportasi ? (
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 whitespace-nowrap">
+                                                    <Bus className="w-3 h-3 mr-1" /> {row.modaTransportasi}
+                                                </span>
+                                            ) : <span className="text-slate-400 text-xs">-</span>}
+                                        </TableCell>
+                                        <TableCell className="hidden md:table-cell">
+                                            <p className="text-xs text-slate-600 line-clamp-2" title={row.alasanPerjalanan}>{row.alasanPerjalanan || "-"}</p>
+                                        </TableCell>
+                                        <TableCell className="text-right pr-4">
+                                            <div className="flex justify-end gap-2">
+                                                {/* DETAIL BUTTON */}
+                                                <Button variant="ghost" size="icon" onClick={() => setSelectedData(row)} className="h-8 w-8 text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200">
+                                                    <Eye className="w-4 h-4" />
+                                                </Button>
+                                                
+                                                {/* DELETE BUTTON (Triggers Modal) */}
+                                                <Button variant="ghost" size="icon" onClick={() => openDeleteModal(row.id)} className="h-8 w-8 text-red-500 hover:bg-red-50 border border-red-100">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+                
+                {/* FOOTER */}
+                {filteredData.length > 0 && (
+                    <div className="flex flex-col md:flex-row items-center justify-between px-4 py-4 bg-slate-50 rounded-b-xl gap-4">
+                        <div className="text-xs text-slate-500 text-center md:text-left">
+                            Menampilkan <strong>{(currentPage - 1) * itemsPerPage + 1}</strong> - <strong>{Math.min(currentPage * itemsPerPage, filteredData.length)}</strong> dari <strong>{filteredData.length}</strong> data.
+                        </div>
+                        <div className="flex gap-1">
+                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 w-8 p-0"><ChevronLeft className="w-4 h-4" /></Button>
+                            <span className="flex items-center px-2 text-sm font-medium">Halaman {currentPage}</span>
+                            <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 w-8 p-0"><ChevronRight className="w-4 h-4" /></Button>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
+
+        {/* --- MODAL DETAIL (Diluar Table loop) --- */}
+        <Dialog open={!!selectedData} onOpenChange={(open) => !open && setSelectedData(null)}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto w-[95vw] rounded-lg">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-xl"><FileText className="w-5 h-5 text-blue-600" /> Detail Responden</DialogTitle>
+                    <CardDescription>ID: {selectedData?.id}</CardDescription>
+                </DialogHeader>
+                {selectedData && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                        {/* Bagian Kiri: Profil */}
+                        <div className="space-y-4">
+                            <div className="bg-slate-50 p-4 rounded-lg border">
+                                <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2"><User className="w-4 h-4" /> Profil</h4>
+                                <div className="grid grid-cols-2 gap-y-3 text-sm">
+                                    <div className="text-slate-500">Usia</div><div className="font-medium">{selectedData.usia}</div>
+                                    <div className="text-slate-500">Pekerjaan</div><div className="font-medium">{selectedData.pekerjaan}</div>
+                                    <div className="text-slate-500">Penghasilan</div><div className="font-medium">{selectedData.penghasilan}</div>
+                                    <div className="text-slate-500">Waktu</div><div className="font-medium">{formatDate(selectedData.createdAt)}</div>
+                                </div>
+                            </div>
+                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <h4 className="font-semibold text-blue-900 mb-2">Moda</h4>
+                                <p className="text-lg font-bold text-blue-700">{selectedData.modaTransportasi || "Belum Memilih"}</p>
+                            </div>
+                        </div>
+                        {/* Bagian Kanan: Perjalanan */}
+                        <div className="space-y-4">
+                                <div className="bg-slate-50 p-4 rounded-lg border">
+                                <h4 className="font-semibold text-slate-800 mb-3 flex items-center gap-2"><MapPin className="w-4 h-4" /> Perjalanan</h4>
+                                <div className="relative pl-4 border-l-2 border-slate-200 space-y-6">
+                                    <div className="relative">
+                                        <div className="absolute -left-[21px] top-1 w-3 h-3 bg-slate-400 rounded-full border-2 border-white"></div>
+                                        <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">Asal</p>
+                                        <p className="font-semibold">{selectedData.domisiliProv}</p>
+                                        <p className="text-sm text-slate-600">{selectedData.domisiliKota}</p>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="absolute -left-[21px] top-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></div>
+                                        <p className="text-xs text-red-500 uppercase font-bold tracking-wider">Tujuan</p>
+                                        {selectedData.tujuanProvinsi === "Tidak Mudik" ? (
+                                            <p className="font-semibold text-slate-400 italic">Tidak Mudik</p>
+                                        ) : (
+                                            <>
+                                                <p className="font-semibold text-slate-900">{selectedData.tujuanProvinsi}</p>
+                                                <p className="text-sm text-slate-600">{selectedData.tujuanKota}</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                <h4 className="font-semibold text-yellow-800 mb-1 flex items-center gap-2"><AlertCircle className="w-4 h-4" /> Saran</h4>
+                                <p className="text-sm text-slate-700 italic">"{selectedData.saran || "-"}"</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                <DialogFooter><Button variant="outline" onClick={() => setSelectedData(null)}>Tutup</Button></DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        {/* --- MODAL KONFIRMASI HAPUS (BARU) --- */}
+        <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+            <DialogContent className="max-w-md rounded-lg">
+                <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2 text-red-600">
+                        <AlertCircle className="w-6 h-6" /> Hapus Data Responden?
+                    </DialogTitle>
+                    <DialogDescription className="pt-2 text-slate-600">
+                        Apakah Anda yakin ingin menghapus data responden ini secara permanen? 
+                        Tindakan ini tidak dapat dibatalkan.
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="mt-4 gap-2 sm:gap-0">
+                    <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>Batal</Button>
+                    <Button variant="destructive" onClick={confirmDelete}>Ya, Hapus Data</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
     </div>
   )
 }
